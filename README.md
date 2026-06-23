@@ -1,6 +1,6 @@
 # Info
 
-This is a fork of the original penetration tool https://github.com/risinek/esp32-wifi-penetration-tool. This fork adds an evil twin functionality with a captive portal.
+This is my fork of the original penetration tool https://github.com/risinek/esp32-wifi-penetration-tool. This fork adds an evil twin functionality with a captive portal.
 
 # ESP32 Wi-Fi Penetration Tool
 
@@ -40,7 +40,8 @@ By default:
     ![Web client UI](doc/images/ui-config.png)
 
 ## Build
-This project is currently developed using ESP-IDF 4.1 (commit `5ef1b390026270503634ac3ec9f1ec2e364e23b2`). It may be broken on newer version.
+~~This project is currently developed using ESP-IDF 4.1 (commit `5ef1b390026270503634ac3ec9f1ec2e364e23b2`). It may be broken on newer version.~~
+This project can now be built using the newest ESP IDF (currently ESP IDF v6.0.1).
 
 Project can be built in the usual ESP-IDF way:
 
