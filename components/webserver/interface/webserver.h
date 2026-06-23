@@ -33,4 +33,14 @@ typedef struct {
  */
 void webserver_run();
 
+/**
+ * @brief Starts DNS server to redirect all queries to the ESP32.
+ */
+void dns_server_start();
+
+/**
+ * @brief Stops DNS server.
+ */
+void dns_server_stop();
+
 #endif

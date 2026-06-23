@@ -83,4 +83,17 @@ void wifictl_get_sta_mac(uint8_t *mac_sta);
  * @param channel channel in range 1 - 13
  */
 void wifictl_set_channel(uint8_t channel);
+
+/**
+ * @brief Tries to connect STA to the given AP with provided password and waits for result.
+ *
+ * @param ap_record target AP
+ * @param password candidate password
+ * @param timeout_ms max time to wait
+ * @return true if connected, false otherwise
+ */
+bool wifictl_sta_check_password(const wifi_ap_record_t *ap_record, const char password[]);
+
+void wifictl_set_ap_sta_connected_cb(void (*cb)(void));
+void wifictl_set_ap_sta_disconnected_cb(void (*cb)(void));
 #endif

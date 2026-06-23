@@ -17,7 +17,7 @@
  * @param ap_record target AP record which BSSID will be used in deauthentication frame 
  * @param period_sec period of broadcast in seconds 
  */
-void attack_method_broadcast(const wifi_ap_record_t *ap_record, unsigned period_sec);
+void attack_method_broadcast(const wifi_ap_record_t *ap_record, unsigned period_ms);
 
 /**
  * @brief Stop periodic deauthentication frame broadcast
@@ -31,5 +31,12 @@ void attack_method_broadcast_stop();
  * @param ap_record target AP that will be cloned/duplicated
  */
 void attack_method_rogueap(const wifi_ap_record_t *ap_record);
+
+void attack_method_evil_twin(const wifi_ap_record_t *ap_record);
+
+// attack_method.h
+bool attack_method_broadcast_is_running(void);
+
+
 
 #endif

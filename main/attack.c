@@ -24,6 +24,8 @@
 #include "webserver.h"
 #include "wifi_controller.h"
 
+#include "attack_evil_twin.h"
+
 static const char* TAG = "attack";
 static attack_status_t attack_status = { .state = READY, .type = -1, .content_size = 0, .content = NULL };
 static esp_timer_handle_t attack_timeout_handle;
@@ -34,10 +36,14 @@ const attack_status_t *attack_get_status() {
 
 void attack_update_status(attack_state_t state) {
     attack_status.state = state;
-    if(state == FINISHED) {
+    if (state == FINISHED) {
         ESP_LOGD(TAG, "Stopping attack timeout timer");
-        ESP_ERROR_CHECK(esp_timer_stop(attack_timeout_handle));
-    } 
+        // Timer may not be running (e.g. evil twin has no timeout)
+        esp_err_t err = esp_timer_stop(attack_timeout_handle);
+        if (err != ESP_OK && err != ESP_ERR_INVALID_STATE) {
+            ESP_ERROR_CHECK(err);
+        }
+    }
 }
 
 void attack_append_status_content(uint8_t *buffer, unsigned size){
@@ -73,7 +79,12 @@ char *attack_alloc_result_content(unsigned size) {
  */
 static void attack_timeout(void* arg){
     ESP_LOGD(TAG, "Attack timed out");
-    
+
+    if (attack_status.type == ATTACK_TYPE_EVIL_TWIN) {
+        ESP_LOGW(TAG, "Timeout fired for evil twin — ignoring");
+        return;
+    }
+
     attack_update_status(TIMEOUT);
 
     switch(attack_status.type) {
@@ -91,6 +102,10 @@ static void attack_timeout(void* arg){
         case ATTACK_TYPE_DOS:
             ESP_LOGI(TAG, "Abort DOS attack...");
             attack_dos_stop();
+            break;
+        case ATTACK_TYPE_EVIL_TWIN:
+            ESP_LOGI(TAG, "Abort EVIL TWIN attack...");
+            attack_evil_twin_stop();
             break;
         default:
             ESP_LOGE(TAG, "Unknown attack type. Not aborting anything");
@@ -124,9 +139,11 @@ static void attack_request_handler(void *args, esp_event_base_t event_base, int3
         ESP_LOGE(TAG, "NPE: No attack_config.ap_record!");
         return;
     }
-    // set timeout
-    ESP_ERROR_CHECK(esp_timer_start_once(attack_timeout_handle, attack_config.timeout * 1000000));
-    // start attack based on it's type
+    // Only start timeout timer for attacks that have one
+    if (attack_config.type != ATTACK_TYPE_EVIL_TWIN) {
+        ESP_ERROR_CHECK(esp_timer_start_once(attack_timeout_handle, attack_config.timeout * 1000000));
+    }
+    // start attack based on its type
     switch(attack_config.type) {
         case ATTACK_TYPE_PMKID:
             attack_pmkid_start(&attack_config);
@@ -139,6 +156,9 @@ static void attack_request_handler(void *args, esp_event_base_t event_base, int3
             break;
         case ATTACK_TYPE_DOS:
             attack_dos_start(&attack_config);
+            break;
+        case ATTACK_TYPE_EVIL_TWIN:
+            attack_evil_twin_start(&attack_config);
             break;
         default:
             ESP_LOGE(TAG, "Unknown attack type!");
