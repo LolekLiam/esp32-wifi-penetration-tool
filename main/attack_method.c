@@ -17,6 +17,7 @@
 
 #include "wifi_controller.h"
 #include "wsl_bypasser.h"
+#include "esp_wifi.h"
 
 static const char *TAG = "main:attack_method";
 static esp_timer_handle_t deauth_timer_handle;
