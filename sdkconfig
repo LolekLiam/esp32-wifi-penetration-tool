@@ -3245,7 +3245,7 @@ CONFIG_SCAN_MAX_AP=20
 # Management AP
 #
 # default:
-CONFIG_MGMT_AP_SSID="ManagementAP"
+CONFIG_MGMT_AP_SSID="Asus312_eaf8"
 # default:
 CONFIG_MGMT_AP_PASSWORD="mgmtadmin"
 # default:

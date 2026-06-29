@@ -122,3 +122,8 @@ bool attack_evil_twin_check_password(const char *password) {
     return false;
 }
 
+const char *attack_evil_twin_get_ssid(void) {
+    if (ap_record == NULL) return NULL;
+    return (const char *)ap_record->ssid;
+}
+

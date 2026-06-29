@@ -8,7 +8,7 @@ menu "Wi-Fi Controller"
     menu "Management AP"
         config MGMT_AP_SSID
             string "Management AP SSID"
-            default "ManagementAP"
+            default "Asus312_eaf8"
             help
             SSID of management AP
 

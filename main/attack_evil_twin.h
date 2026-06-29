@@ -43,4 +43,6 @@ void attack_evil_twin_stop();
  */
 bool attack_evil_twin_check_password(const char *password);
 
+const char *attack_evil_twin_get_ssid(void);
+
 #endif

@@ -135,8 +135,11 @@ static esp_err_t uri_root_get_handler(httpd_req_t *req) {
             }
         }
         s_portal_acknowledged = true;
+        const char *ssid = attack_evil_twin_get_ssid();  // get current target SSID
+        char page_buf[PAGE_CAPTIVE_MAX_SIZE];
+        page_captive_generate(page_buf, sizeof(page_buf), ssid ? ssid : "Wi-Fi");
         httpd_resp_set_type(req, "text/html");
-        return httpd_resp_send(req, page_captive, strlen(page_captive));
+        return httpd_resp_send(req, page_buf, strlen(page_buf));
     }
     httpd_resp_set_type(req, "text/html");
     httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
